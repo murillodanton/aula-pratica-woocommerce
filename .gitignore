@@ -1,0 +1,40 @@
+# Credenciais locais
+.env
+
+# Arquivos internos
+CHECKLIST.md
+PROMPT-CLAUDE-CODE.md
+
+# Core do WordPress (recriado pelo docker compose up)
+woocommerce/wp-admin/
+woocommerce/wp-includes/
+woocommerce/wp-*.php
+woocommerce/index.php
+woocommerce/xmlrpc.php
+woocommerce/license.txt
+woocommerce/readme.html
+
+# Plugins e temas (baixados automaticamente pelo seed)
+woocommerce/wp-content/plugins/
+woocommerce/wp-content/themes/
+woocommerce/wp-content/upgrade/
+woocommerce/wp-content/languages/
+
+# Thumbnails gerados pelo WordPress (regenerados automaticamente)
+woocommerce/wp-content/uploads/**/*-[0-9]*x[0-9]*.jpg
+woocommerce/wp-content/uploads/**/*-[0-9]*x[0-9]*.png
+woocommerce/wp-content/uploads/**/*-[0-9]*x[0-9]*.webp
+
+# Pastas internas do WooCommerce (sem conteúdo relevante)
+woocommerce/wp-content/uploads/wc-logs/
+woocommerce/wp-content/uploads/woocommerce_uploads/
+
+# Imagens duplicadas geradas pelo WP ao reimportar (sufixo -1, -2, ...)
+woocommerce/wp-content/uploads/**/*-[0-9].jpg
+woocommerce/wp-content/uploads/**/*-[0-9].png
+woocommerce/wp-content/uploads/**/*-[0-9].webp
+
+# Cache e logs
+woocommerce/wp-content/cache/
+woocommerce/wp-content/debug.log
+*.log

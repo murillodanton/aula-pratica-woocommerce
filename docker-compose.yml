@@ -1,0 +1,81 @@
+# ============================================================================
+# Stack Docker para a Aula Prática - WooCommerce
+#
+# Serviços:
+#   db        : MariaDB 11 (corresponde ao "MySQL" do XAMPP no PDF)
+#   wordpress : WordPress + Apache + PHP (corresponde ao "Apache" do XAMPP)
+#   wpcli     : Roda o seed script (instala WC, cria produtos, configura tudo)
+#
+# A pasta ./woocommerce/ no host equivale a C:\xampp\htdocs\woocommerce\ do PDF.
+# ============================================================================
+
+services:
+  db:
+    image: mariadb:11
+    container_name: aula_woo_db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: woocommerce_db
+      MARIADB_USER: wpuser
+      MARIADB_PASSWORD: wppass
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  wordpress:
+    image: wordpress:6.8-php8.2-apache
+    container_name: aula_woo_wp
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: woocommerce_db
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: wppass
+      WORDPRESS_TABLE_PREFIX: wp_
+      WORDPRESS_DEBUG: "0"
+    volumes:
+      - ./woocommerce:/var/www/html
+      - ./imagens:/imagens:ro
+
+  # Serviço one-shot que roda o seed (criação de loja + produtos + configurações)
+  # Não sobe junto com `docker compose up`; só roda via `docker compose run --rm wpcli`
+  # ou via `instalar.sh` / `instalar.ps1`
+  wpcli:
+    image: wordpress:cli-2-php8.2
+    container_name: aula_woo_wpcli
+    profiles: ["tools"]
+    depends_on:
+      db:
+        condition: service_healthy
+      wordpress:
+        condition: service_started
+    user: "33:33"  # www-data
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: woocommerce_db
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: wppass
+      SITE_URL: "http://localhost:8080"
+      SITE_TITLE: "Loja Pijamas"
+      ADMIN_USER: "admin"
+      ADMIN_PASS: "admin123"
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+    volumes:
+      - ./woocommerce:/var/www/html
+      - ./imagens:/imagens:ro
+      - ./seed:/seed:ro
+    entrypoint: ["sh", "/seed/seed.sh"]
+
+volumes:
+  dbdata:
